@@ -1,0 +1,129 @@
+version: "2"
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  default: all
+  disable:
+    - lll             # line-length; cosmetic, gofmt/gofumpt handle formatting
+    - wsl             # deprecated alias; opinionated whitespace, conflicts with gofmt
+    - wsl_v5          # whitespace; opinionated, conflicts with gofmt
+    - varnamelen      # flags short names (i, tx, id); too noisy on idiomatic Go
+    - gocognit        # overlaps gocyclo (kept)
+    - exhaustruct     # requires initializing every struct field; impractical with optional fields
+    - ireturn         # flags returning interfaces; idiomatic in this codebase
+    - nonamedreturns  # named returns used deliberately for readability
+    - gochecknoinits  # init() used for validator registration
+    - gochecknoglobals # package-level vars used for registries/config
+    - testpackage     # tests use white-box (internal) package access
+    - depguard        # no import allow/deny rules configured
+    - goheader        # no license-header policy in place
+  settings:
+    cyclop:
+      max-complexity: 10
+    dupl:
+      threshold: 80
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      exclude-functions:
+        - (io.Closer).Close
+        - (net/http.ResponseWriter).Write
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+    funlen:
+      lines: 60
+      statements: 40
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        - style
+        - opinionated
+      settings:
+        hugeParam:
+          sizeThreshold: 80
+        rangeValCopy:
+          sizeThreshold: 128
+    gocyclo:
+      min-complexity: 10
+    godot:
+      scope: all
+    govet:
+      enable-all: true
+    nakedret:
+      max-func-lines: 20
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+    revive:
+      severity: error
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: exported
+          arguments: ["disableStutteringCheck"]
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: var-declaration
+        - name: var-naming
+    staticcheck:
+      checks: ["all"]
+    wrapcheck:
+      ignore-sig-regexps:
+        # Сигнатуры методов собственных интерфейсов: ошибка уже обёрнута
+        # выше по стеку. Префикс func — часть выводимой сигнатуры.
+        - "func \\(github\\.com/zvonilkaRU/.+\\)"
+  exclusions:
+    generated: strict
+    paths:
+      - "generated"
+      - "third_party"
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters: [gocyclo, cyclop, funlen, dupl, goconst, prealloc, wrapcheck]
+        path: "_test\\.go"
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  fix: false
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gofumpt
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/zvonilkaRU/libs
