@@ -88,17 +88,7 @@ func (h *Harness) DSN() string {
 // Exec выполняет одиночный SQL-запрос с аргументами в схеме теста: сидинг
 // данных в обход API репозитория.
 func (h *Harness) Exec(ctx context.Context, query string, args ...any) error {
-	db, err := sql.Open("pgx", h.DSN())
-	if err != nil {
-		return fmt.Errorf("open: %w", err)
-	}
-	defer db.Close()
-	_, err = db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("exec: %w", err)
-	}
-
-	return nil
+	return execOnDSN(ctx, h.DSN(), query, args...)
 }
 
 // startShared стартует общий контейнер PostgreSQL (один на процесс) и
